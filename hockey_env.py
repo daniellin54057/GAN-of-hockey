@@ -1,5 +1,4 @@
 import pygame
-import random
 import numpy as np
 from paddle import Paddle
 from ball_test import Ball
@@ -43,11 +42,12 @@ class HockeyEnv:
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
         self.ball.rect.y = self.screen_height // 2 - config.BALL_SIZE // 2
         self.ball.velocity = [config.WAY * 5, 0]
+        self.ball.BOUNCE = 0
 
     def reset(self):
         self.rewardA = 0
         self.rewardB = 0
-        config.BOUNCE = 0
+        self.ball.BOUNCE = 0
         # 重置遊戲狀態
         self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
         self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
@@ -56,10 +56,8 @@ class HockeyEnv:
         return self.get_state()
 
     def step(self, actionA, actionB):
-        rewardA = self.rewardA
-        rewardB = self.rewardB
-        rewardB = 0
         rewardA = 0
+        rewardB = 0
         # 接收動作
         if actionA == 0:
             self.paddleA.moveUp(config.PADDLE_SPEED)
@@ -81,23 +79,24 @@ class HockeyEnv:
         # 球拍碰撞檢測 (使用 mask)
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
-            rewardB = 2
+            rewardB = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x += config.PADDLE_WIDTH
-            config.BOUNCE += 1
+            self.ball.BOUNCE += 1
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
-            rewardA = 2
+            rewardA = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x -= config.PADDLE_WIDTH
-            config.BOUNCE += 1
+            self.ball.BOUNCE += 1
 
         # 獎勳和結束條件
-
-        if self.ball.rect.x < 0:  
-            config.WAY *= -1 
+        if self.ball.rect.x < 0:
+            rewardB = 1
+            config.WAY *= -1
             self.done = True
-        if self.ball.rect.x > self.screen_width :
+        if self.ball.rect.x > self.screen_width:
+            rewardA = 1
             config.WAY *= -1
             self.done = True
 
@@ -116,7 +115,7 @@ class HockeyEnv:
             self.ball.rect.y,
             self.ball.velocity[0],
             self.ball.velocity[1],
-            config.BOUNCE
+            self.ball.BOUNCE
         ], dtype=np.float32)
     
 
@@ -126,3 +125,4 @@ class HockeyEnv:
         pygame.draw.line(self.screen, config.WHITE, [self.screen_width // 2, 0], [self.screen_width // 2, self.screen_height], 5)
         self.all_sprites_list.draw(self.screen)
         pygame.display.flip()
+
