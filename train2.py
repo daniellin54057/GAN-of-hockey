@@ -132,7 +132,7 @@ def train():
 
         # 動態繪圖
         plt.clf()
-        plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="blue", marker="o")
+        plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="blue", marker=".")
         plt.xlabel("Episode")
         plt.ylabel("BOUNCE Count")
         plt.title("BOUNCE Count per Episode")
