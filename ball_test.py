@@ -10,6 +10,7 @@ class Ball(pygame.sprite.Sprite):
         self.image.fill((0, 0, 0, 0))  # 設置透明
         pygame.draw.ellipse(self.image, color, [0, 0, width, height])  # 繪製球
         self.rect = self.image.get_rect()
+        self.BOUNCE = 0
 
         # 創建mask，精確檢查碰撞
         self.mask = pygame.mask.from_surface(self.image)
