@@ -7,6 +7,7 @@ import pickle
 from collections import deque
 import matplotlib.pyplot as plt
 import pygame
+import math
 from hockey_env import HockeyEnv
 import config
 
@@ -67,13 +68,10 @@ def train():
     buffer2 = ReplayBuffer()
     scores1, scores2, bounce_per_episode = [], [], []
     episodes = config.EPISODES
-    epsilon = 1.0
-    epsilon_min = 0.01
-    epsilon_decay = 0.995
     batch_size = 64
     # 初始化 pygame
     pygame.init()
-    screen = pygame.display.set_mode((700, 600))
+    screen = pygame.display.set_mode((config.SCREEN_WIDTH, config.SCREEN_HEIGHT))
     pygame.display.set_caption("Hockey Training Visualization")
     clock = pygame.time.Clock()
 
@@ -81,24 +79,20 @@ def train():
         screen.fill((0, 0, 0))  # 清空螢幕為黑色
         env.render()  # 假設 HockeyEnv 中有 render 方法繪製畫面
         pygame.display.flip()
-
+    x = []
+    total_total = []
     for episode in range(episodes):
         state1, state2 = env.reset(), env.reset()
         state1, state2 = normalize_state(state1), normalize_state(state2)
         total_reward1, total_reward2 = 0, 0
 
+
         while not env.done:
             # 模型1的行動
-            if np.random.rand() < epsilon:
-                action1 = np.random.randint(action_size)  # 隨機探索
-            else:
-                action1 = model1(torch.tensor(state1, dtype=torch.float32)).argmax().item()
+            action1 = model1(torch.tensor(state1, dtype=torch.float32)).argmax().item()
 
             # 模型2的行動
-            if np.random.rand() < epsilon:
-                action2 = np.random.randint(action_size)  # 隨機探索
-            else:
-                action2 = model2(torch.tensor(state2, dtype=torch.float32)).argmax().item()
+            action2 = model2(torch.tensor(state2, dtype=torch.float32)).argmax().item()
 
             next_state1, (reward1, reward2), done = env.step(action1, action2)
             next_state1, next_state2 = normalize_state(next_state1), normalize_state(next_state1)
@@ -124,18 +118,28 @@ def train():
             if done:
                 break
         # 記錄分數與碰撞次數
+
         scores1.append(total_reward1)
         scores2.append(total_reward2)
-        bounce_per_episode.append(env.ball.BOUNCE)
+ 
+        if episode == 0:
+            pass#x.append(0)
+        else:
+            t = total_reward1 + total_reward2
+            total_total.append(t)
+            x.append(math.log(episode))
+            bounce_per_episode.append(env.ball.BOUNCE)
 
-        print(f"Episode {episode + 1}: Player A Reward: {total_reward1}, Player B Reward: {total_reward2}, BOUNCE: {env.ball.BOUNCE}")
+        print(f"Episode {episode }: Player A Reward: {total_reward1}, Player B Reward: {total_reward2}, BOUNCE: {env.ball.BOUNCE}")
 
         # 動態繪圖
         plt.clf()
-        plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="blue", marker=".")
+        plt.xlim(0, math.log(config.EPISODES))
+        #plt.plot(x, bounce_per_episode, label="Bounces per Episode(log)", color="blue", marker=".")
+        plt.plot(x, total_total, label="total reward", color="red", marker="")
         plt.xlabel("Episode")
-        plt.ylabel("BOUNCE Count")
-        plt.title("BOUNCE Count per Episode")
+        plt.ylabel("Total Count")
+        plt.title("Reward to Episode(log)")
         plt.grid(True)
         plt.legend()
         plt.pause(0.01)
@@ -144,7 +148,6 @@ def train():
 
 
         # 減少探索率
-        epsilon = max(epsilon_min, epsilon * epsilon_decay)
         scheduler1.step()
         scheduler2.step()
 
@@ -158,8 +161,8 @@ def train():
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="blue", marker="o")
     plt.xlabel("Episode")
-    plt.ylabel("BOUNCE Count")
-    plt.title("BOUNCE Count per Episode")
+    plt.ylabel("Total Reward")
+    plt.title("Reward to Episode")
     plt.grid(True)
     plt.legend()
     plt.savefig("bounce_plot.png")
