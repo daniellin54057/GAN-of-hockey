@@ -154,8 +154,8 @@ def train():
         print(f"Episode {episode + 1}: Player A Reward: {total_reward1}, Player B Reward: {total_reward2}")
         # 儲存模型與數據
     save_model(bounce_per_episode, "bounce_model.pkl")
-    torch.save(model1.state_dict(), "model1_final.pth")
-    torch.save(model2.state_dict(), "model2_final.pth")
+    torch.save(model1.state_dict(), f"model1_final{config.EPISODES}.pth")
+    torch.save(model2.state_dict(), f"model2_final{config.EPISODES}.pth")
 
     # 繪製最終圖表
     plt.figure(figsize=(10, 6))
@@ -165,7 +165,7 @@ def train():
     plt.title("Reward to Episode")
     plt.grid(True)
     plt.legend()
-    plt.savefig("bounce_plot.png")
+    plt.savefig("reward to ep (log).png")
     plt.show()
     print("訓練完成，圖表與模型已儲存。")
     pygame.quit()
