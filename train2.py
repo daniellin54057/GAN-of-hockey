@@ -159,7 +159,7 @@ def train():
 
     # 繪製最終圖表
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="blue", marker="o")
+    plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="red", marker=".")
     plt.xlabel("Episode")
     plt.ylabel("Total Reward")
     plt.title("Reward to Episode")
