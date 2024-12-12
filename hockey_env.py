@@ -41,18 +41,21 @@ class HockeyEnv:
     def reset_ball(self):
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
         self.ball.rect.y = self.screen_height // 2 - config.BALL_SIZE // 2
-        self.ball.velocity = [config.WAY * 5, 0]
+        self.ball.velocity = [config.WAY * config.BALL_INITIAL_SPEED[0], 0]
         self.ball.BOUNCE = 0
 
-    def reset(self):
+    def reset(self, episode):
         self.rewardA = 0
         self.rewardB = 0
         self.ball.BOUNCE = 0
         # 重置遊戲狀態
-        self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
-        self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
+        self.paddleA.rect.y = self.screen_height // 2 - self.paddleA.height // 2
+        self.paddleB.rect.y = self.screen_height // 2 - self.paddleB.height // 2
         self.reset_ball()
         self.done = False
+        if episode >= 100:    
+            self.paddleA.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.EPISODES)
+            self.paddleB.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.EPISODES)
         return self.get_state()
 
     def step(self, actionA, actionB):
