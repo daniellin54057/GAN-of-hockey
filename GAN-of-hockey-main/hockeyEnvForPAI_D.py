@@ -90,12 +90,20 @@ class HockeyEnv:
         # 球拍碰撞檢測 (使用 mask)
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            # 设置音量和循环次数
+            sound.set_volume(50)  # 设置音量为50%
+            sound.play(1)  # 播放1次
             rewardB = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x += config.PADDLE_WIDTH
             self.ball.BOUNCE += 1
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            # 设置音量和循环次数
+            sound.set_volume(50)  # 设置音量为50%
+            sound.play(1)  # 播放1次
             rewardA = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x -= config.PADDLE_WIDTH
