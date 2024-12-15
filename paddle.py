@@ -27,8 +27,8 @@ class Paddle(pygame.sprite.Sprite):
           
     def moveDown(self, pixels):
         self.rect.y += pixels
-        if self.rect.y > 400:
-            self.rect.y = 400
+        if self.rect.y > config.SCREEN_HEIGHT - self.height:
+            self.rect.y = config.SCREEN_HEIGHT - self.height
     def changehight(self, pixels):
         self.height = pixels
         self.image = pygame.Surface([self.width, self.height])
