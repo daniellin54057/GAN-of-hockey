@@ -99,13 +99,18 @@ class HockeyEnv:
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x += config.PADDLE_WIDTH
             self.ball.BOUNCE += 1
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            sound.set_volume(50)  
+            sound.play(1)
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
             rewardA = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x -= config.PADDLE_WIDTH
             self.ball.BOUNCE += 1
-
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            sound.set_volume(50)  
+            sound.play(1)
         # 獎勳和結束條件
         if self.ball.rect.x < 0:
             rewardB = 1
