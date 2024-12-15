@@ -66,16 +66,22 @@ class playhockey:
 
         if self.ball.rect.y <= 0 or self.ball.rect.y >= self.screen_height - config.BALL_SIZE:
             self.ball.velocity[1] = -self.ball.velocity[1]
+              
         
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
             self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.001)
             self.ball.rect.x += config.PADDLE_WIDTH
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            sound.set_volume(50)  
+            sound.play(1)
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
             self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.01)
             self.ball.rect.x -= config.PADDLE_WIDTH
-        
+            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+            sound.set_volume(50)  
+            sound.play(1)
         if self.ball.rect.x < 0 or self.ball.rect.x > self.screen_width: 
             if self.ball.rect.x < 0:
                 self.scoreB += 1
