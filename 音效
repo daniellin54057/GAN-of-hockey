@@ -1,0 +1,4 @@
+sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
+# 设置音量和循环次数
+sound.set_volume(50)  # 设置音量为50%
+sound.play(3)  # 播放3次
