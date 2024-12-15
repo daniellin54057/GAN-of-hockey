@@ -41,18 +41,34 @@ class HockeyEnv:
     def reset_ball(self):
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
         self.ball.rect.y = self.screen_height // 2 - config.BALL_SIZE // 2
-        self.ball.velocity = [config.WAY * 5, 0]
+        self.ball.velocity = [config.WAY * config.BALL_INITIAL_SPEED[0], 0]
         self.ball.BOUNCE = 0
 
-    def reset(self):
+    def reset(self, episode):
         self.rewardA = 0
         self.rewardB = 0
         self.ball.BOUNCE = 0
         # 重置遊戲狀態
-        self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
-        self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
+        self.paddleA.rect.y = self.screen_height // 2 - self.paddleA.height//2
+        self.paddleB.rect.y = self.screen_height // 2  - self.paddleB.height//2
         self.reset_ball()
         self.done = False
+        self.paddleA.rect.x = 20
+        self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
+        if episode >= 100 and episode < config.PADDLE_DECREASE:    
+            if config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode /500 <= config.PADDLE_MIN:
+                self.paddleA.changehight(config.PADDLE_MIN)
+                self.paddleB.changehight(config.PADDLE_MIN)
+            else:
+                self.paddleA.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.PADDLE_DECREASE)
+                self.paddleB.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.PADDLE_DECREASE)
+            self.paddleA.rect.x = 20
+            self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
+        elif episode >= config.PADDLE_DECREASE:
+            self.paddleA.changehight(config.PADDLE_MIN)
+            self.paddleB.changehight(config.PADDLE_MIN)
+            self.paddleA.rect.x = 20
+            self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
         return self.get_state()
 
     def step(self, actionA, actionB):
@@ -73,7 +89,7 @@ class HockeyEnv:
         self.all_sprites_list.update()
 
         # 邊界檢測
-        if self.ball.rect.y <= 0 or self.ball.rect.y >= self.screen_height - config.BALL_SIZE:
+        if self.ball.rect.y < 0 or self.ball.rect.y > self.screen_height - config.BALL_SIZE:
             self.ball.velocity[1] = -self.ball.velocity[1]
 
         # 球拍碰撞檢測 (使用 mask)
@@ -109,8 +125,8 @@ class HockeyEnv:
     def get_state(self):
         # 返回狀態數據
         return np.array([
-            self.paddleA.rect.y,
-            self.paddleB.rect.y,
+            self.paddleA.rect.y + self.paddleA.height//2,
+            self.paddleB.rect.y + self.paddleB.height//2,
             self.ball.rect.x,
             self.ball.rect.y,
             self.ball.velocity[0],
