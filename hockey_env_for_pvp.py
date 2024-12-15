@@ -42,6 +42,7 @@ class playhockey:
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
         self.ball.rect.y = self.screen_height // 2 - config.BALL_SIZE // 2
         self.ball.velocity = [config.WAY * 5, 0]
+        self.ball.reset_color()  # 重置球的顏色
 
     def reset(self):
         self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
