@@ -1,5 +1,6 @@
 import pygame
 import random
+import config
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self, color, width, height):
@@ -31,3 +32,30 @@ class Ball(pygame.sprite.Sprite):
         self.velocity[1] += random.randint(-3, 3)  # 給垂直速度增加隨機偏移量
         if abs(self.velocity[1]) > 8:  # 防止速度過快
             self.velocity[1] = 8 if self.velocity[1] > 0 else -8
+         # 增加反彈次數並更新顏色
+        self.BOUNCE += 1
+        self.update_color()
+
+    def update_color(self):
+        """
+        根據反彈次數調整球的顏色。
+        """
+        mode = (self.BOUNCE // 3) % 6
+        if mode == 0 : color = config.RED
+        elif mode == 1 : color = config.ORANGE
+        elif mode == 2 : color = config.YELLOW
+        elif mode == 3 : color = config.GREEN
+        elif mode == 4 : color = config.BLUE
+        elif mode == 5 : color = config.PURPLE
+        self.color = color
+        self.image.fill((0, 0, 0, 0))  # 清除舊顏色
+        pygame.draw.ellipse(self.image, self.color, [0, 0, self.rect.width, self.rect.height])
+
+    def reset_color(self):
+        """
+        在失分後重置顏色和反彈次數。
+        """
+        self.BOUNCE = 0
+        self.color = (255, 255, 255)  # 重置為白色
+        self.image.fill((0, 0, 0, 0))  # 清除舊顏色
+        pygame.draw.ellipse(self.image, self.color, [0, 0, self.rect.width, self.rect.height])
