@@ -21,7 +21,7 @@ class playhockey:
         self.paddleA.rect.x = 20 + config.PADDLE_WIDTH // 2
         self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
         
-        self.paddleB = Paddle(config.CYAN , config.PADDLE_WIDTH , config.PADDLE_HEIGHT)
+        self.paddleB = Paddle(config.MAGENTA , config.PADDLE_WIDTH , config.PADDLE_HEIGHT)
         self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH//2 
         self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
 
@@ -32,6 +32,11 @@ class playhockey:
         self.all_sprites_list.add(self.paddleA)
         self.all_sprites_list.add(self.paddleB)
         self.all_sprites_list.add(self.ball)
+
+        self.scoreA = 0
+        self.scoreB = 0
+
+        self.font = pygame.font.Font(None, 74)
     
     def reset_ball(self):
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
@@ -63,14 +68,18 @@ class playhockey:
         
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
-            self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
+            self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.01)
             self.ball.rect.x += config.PADDLE_WIDTH
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
-            self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
+            self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.01)
             self.ball.rect.x -= config.PADDLE_WIDTH
         
         if self.ball.rect.x < 0 or self.ball.rect.x > self.screen_width: 
+            if self.ball.rect.x < 0:
+                self.scoreB += 1
+            elif self.ball.rect.x > self.screen_width:
+                self.scoreA += 1
             config.WAY *= -1
             self.gg = True
     def render(self):
@@ -78,3 +87,8 @@ class playhockey:
         pygame.draw.line(self.screen, config.WHITE, [self.screen_width // 2, 0], [self.screen_width // 2, self.screen_height], 5)
         self.all_sprites_list.draw(self.screen)
         pygame.display.flip()
+        score_textA = self.font.render(str(self.scoreA), True, config.WHITE)
+        score_textB = self.font.render(str(self.scoreB), True, config.WHITE)
+        
+        self.screen.blit(score_textA, (self.screen_width // 4, 20))
+        self.screen.blit(score_textB, (self.screen_width * 3 // 4, 20))
