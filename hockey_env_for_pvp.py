@@ -1,164 +1,95 @@
 import pygame
-import numpy as np
 from paddle import Paddle
 from ball_test import Ball
 import config
 
-class HockeyEnv:
+class playhockey:
     def __init__(self):
-        self.rewardA = 0
-        self.rewardB = 0 
-        # 初始化 pygame
         pygame.init()
 
-        # 環境參數
         self.screen_width = config.SCREEN_WIDTH
         self.screen_height = config.SCREEN_HEIGHT
-        self.done = False
+        self.gg = False
 
-        # 初始化畫布
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("Hockey Environment")
+        #canvas
 
-        # 初始化遊戲對象
-        self.paddleA = Paddle(config.CYAN, config.PADDLE_WIDTH, config.PADDLE_HEIGHT)
-        self.paddleA.rect.x = 20
+        self.screen = pygame.display.set_mode((self.screen_width , self.screen_height))
+        pygame.display.set_caption('hockey env')
+
+        #items
+        self.paddleA = Paddle(config.CYAN , config.PADDLE_WIDTH , config.PADDLE_HEIGHT)
+        self.paddleA.rect.x = 20 + config.PADDLE_WIDTH // 2
         self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
-
-        self.paddleB = Paddle(config.MAGENTA, config.PADDLE_WIDTH, config.PADDLE_HEIGHT)
-        self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
+        
+        self.paddleB = Paddle(config.MAGENTA , config.PADDLE_WIDTH , config.PADDLE_HEIGHT)
+        self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH//2 
         self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
 
-        self.ball = Ball(config.WHITE, config.BALL_SIZE, config.BALL_SIZE)
+        self.ball = Ball(config.WHITE , config.BALL_SIZE, config.BALL_SIZE)
         self.reset_ball()
 
-        # 遊戲精靈
         self.all_sprites_list = pygame.sprite.Group()
         self.all_sprites_list.add(self.paddleA)
         self.all_sprites_list.add(self.paddleB)
         self.all_sprites_list.add(self.ball)
-        
 
-        #字體
-        self.font = pygame.font.Font(None, 74)
-
-        #分數
         self.scoreA = 0
         self.scoreB = 0
 
+        self.font = pygame.font.Font(None, 74)
+    
     def reset_ball(self):
         self.ball.rect.x = self.screen_width // 2 - config.BALL_SIZE // 2
         self.ball.rect.y = self.screen_height // 2 - config.BALL_SIZE // 2
-        self.ball.velocity = [config.WAY * config.BALL_INITIAL_SPEED[0], 0]
-        self.ball.BOUNCE = 0
+        self.ball.velocity = [config.WAY * 5, 0]
+        self.ball.reset_color()  # 重置球的顏色
 
-    def reset(self, episode):
-        self.rewardA = 0
-        self.rewardB = 0
-        self.ball.BOUNCE = 0
-        # 重置遊戲狀態
-        self.paddleA.rect.y = self.screen_height // 2 - self.paddleA.height//2
-        self.paddleB.rect.y = self.screen_height // 2  - self.paddleB.height//2
+    def reset(self):
+        self.paddleA.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
+        self.paddleB.rect.y = self.screen_height // 2 - config.PADDLE_HEIGHT // 2
         self.reset_ball()
-        self.done = False
-        self.paddleA.rect.x = 20
-        self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
-        if episode >= 100 and episode < config.PADDLE_DECREASE:    
-            if config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode /500 <= config.PADDLE_MIN:
-                self.paddleA.changehight(config.PADDLE_MIN)
-                self.paddleB.changehight(config.PADDLE_MIN)
-            else:
-                self.paddleA.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.PADDLE_DECREASE)
-                self.paddleB.changehight(config.PADDLE_HEIGHT - config.PADDLE_HEIGHT * episode / config.PADDLE_DECREASE)
-            self.paddleA.rect.x = 20
-            self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
-        elif episode >= config.PADDLE_DECREASE:
-            self.paddleA.changehight(config.PADDLE_MIN)
-            self.paddleB.changehight(config.PADDLE_MIN)
-            self.paddleA.rect.x = 20
-            self.paddleB.rect.x = self.screen_width - 20 - config.PADDLE_WIDTH
-        return self.get_state()
-
-    def step(self, actionA, actionB):
-        rewardA = 0
-        rewardB = 0
-        # 接收動作
-        if actionA == 0:
+        self.gg = False
+        
+    def move(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
             self.paddleA.moveUp(config.PADDLE_SPEED)
-        elif actionA == 1:
+        if keys[pygame.K_s]:
             self.paddleA.moveDown(config.PADDLE_SPEED)
-
-        if actionB == 0:
+        
+        if keys[pygame.K_UP]:
             self.paddleB.moveUp(config.PADDLE_SPEED)
-        elif actionB == 1:
+        if keys[pygame.K_DOWN]:
             self.paddleB.moveDown(config.PADDLE_SPEED)
-
-        # 更新狀態
+    
         self.all_sprites_list.update()
 
-        # 邊界檢測
-        if self.ball.rect.y < 0 or self.ball.rect.y > self.screen_height - config.BALL_SIZE:
+        if self.ball.rect.y <= 0 or self.ball.rect.y >= self.screen_height - config.BALL_SIZE:
             self.ball.velocity[1] = -self.ball.velocity[1]
-
-        # 球拍碰撞檢測 (使用 mask)
+        
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
-            rewardB = 1
-            self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
+            self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.001)
             self.ball.rect.x += config.PADDLE_WIDTH
-            self.ball.BOUNCE += 1
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
-            rewardA = 1
-            self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
+            self.ball.velocity[0] *= (config.BALL_BOUNCE_FACTOR + 0.01)
             self.ball.rect.x -= config.PADDLE_WIDTH
-            self.ball.BOUNCE += 1
-
-        # 獎勳和結束條件
-        if self.ball.rect.x < 0:
-            rewardB = 1
+        
+        if self.ball.rect.x < 0 or self.ball.rect.x > self.screen_width: 
+            if self.ball.rect.x < 0:
+                self.scoreB += 1
+            elif self.ball.rect.x > self.screen_width:
+                self.scoreA += 1
             config.WAY *= -1
-            self.done = True
-        if self.ball.rect.x > self.screen_width:
-            rewardA = 1
-            config.WAY *= -1
-            self.done = True
-
-        # 更新球位置
-        self.ball.rect.x += self.ball.velocity[0]
-        self.ball.rect.y += self.ball.velocity[1]
-
-        return self.get_state(), (rewardA, rewardB), self.done
-
-    def get_state(self):
-        # 返回狀態數據
-        return np.array([
-            self.paddleA.rect.y + self.paddleA.height//2,
-            self.paddleB.rect.y + self.paddleB.height//2,
-            self.ball.rect.x,
-            self.ball.rect.y,
-            self.ball.velocity[0],
-            self.ball.velocity[1],
-            self.ball.BOUNCE
-        ], dtype=np.float32)
-    
-
+            self.gg = True
     def render(self):
-        # 填充背景
         self.screen.fill(config.BLACK)
-        
-        # 繪製中線
         pygame.draw.line(self.screen, config.WHITE, [self.screen_width // 2, 0], [self.screen_width // 2, self.screen_height], 5)
-        
-        # 繪製遊戲精靈
         self.all_sprites_list.draw(self.screen)
-        
-        # 繪製分數
+        pygame.display.flip()
         score_textA = self.font.render(str(self.scoreA), True, config.WHITE)
         score_textB = self.font.render(str(self.scoreB), True, config.WHITE)
-        self.screen.blit(score_textA, (self.screen_width // 4 - score_textA.get_width() // 2, 20))
-        self.screen.blit(score_textB, (self.screen_width * 3 // 4 - score_textB.get_width() // 2, 20))
         
-        # 更新屏幕
-        pygame.display.flip()
-
+        self.screen.blit(score_textA, (self.screen_width // 4, 20))
+        self.screen.blit(score_textB, (self.screen_width * 3 // 4, 20))
