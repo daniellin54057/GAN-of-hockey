@@ -82,7 +82,7 @@ def train():
     x = []
     total_total = []
     for episode in range(episodes):
-        state1, state2 = env.reset(), env.reset()
+        state1, state2 = env.reset(episode), env.reset(episode)
         state1, state2 = normalize_state(state1), normalize_state(state2)
         total_reward1, total_reward2 = 0, 0
 
@@ -123,7 +123,7 @@ def train():
         scores2.append(total_reward2)
  
         if episode == 0:
-            pass#x.append(0)
+            pass
         else:
             t = total_reward1 + total_reward2
             total_total.append(t)
@@ -152,14 +152,17 @@ def train():
         scheduler2.step()
 
         print(f"Episode {episode + 1}: Player A Reward: {total_reward1}, Player B Reward: {total_reward2}")
+        if len(total_total) != 0 and total_total[len(total_total)-1] > 100:
+            break
         # 儲存模型與數據
+
     save_model(bounce_per_episode, "bounce_model.pkl")
     torch.save(model1.state_dict(), f"model1_final{config.EPISODES}.pth")
     torch.save(model2.state_dict(), f"model2_final{config.EPISODES}.pth")
 
     # 繪製最終圖表
     plt.figure(figsize=(10, 6))
-    plt.plot(range(len(bounce_per_episode)), bounce_per_episode, label="Bounces per Episode", color="red", marker=".")
+    plt.plot(x, total_total, label="total reward", color="red", marker="")
     plt.xlabel("Episode")
     plt.ylabel("Total Reward")
     plt.title("Reward to Episode")
