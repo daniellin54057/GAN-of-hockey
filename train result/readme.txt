@@ -6,8 +6,8 @@
 from hockey_env import HockeyEnv  # 確保 `HockeyEnv` 已經正確引入
 
 # 初始化模型
-state_size = 10  # 根據環境的狀態維度設置
-action_size = 5  # 根據行為空間維度設置
+state_size = 7  # 根據環境的狀態維度設置
+action_size = 3  # 根據行為空間維度設置
 model = HockeyAI(state_size, action_size)
 
 # 載入儲存的參數
