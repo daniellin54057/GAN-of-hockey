@@ -3,6 +3,9 @@ import numpy as np
 from paddle import Paddle
 from ball_test import Ball
 import config
+from pygame.locals import *
+import os
+pygame.init()
 
 class HockeyEnv:
     def __init__(self):
@@ -92,28 +95,26 @@ class HockeyEnv:
         if self.ball.rect.y < 0 or self.ball.rect.y > self.screen_height - config.BALL_SIZE:
             self.ball.velocity[1] = -self.ball.velocity[1]
 
+        pygame.mixer.init()
+        sound_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "boom.wav")
+        self.collision_sound = pygame.mixer.Sound(sound_path)
+        self.collision_sound.set_volume(100)
+
         # 球拍碰撞檢測 (使用 mask)
         if pygame.sprite.collide_mask(self.paddleA, self.ball):
             self.ball.bounce()
-            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
-            # 设置音量和循环次数
-            sound.set_volume(50)  # 设置音量为50%
-            sound.play(1)  # 播放1次
             rewardB = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x += config.PADDLE_WIDTH
             self.ball.BOUNCE += 1
+            self.collision_sound.play()  # 播放音效
         if pygame.sprite.collide_mask(self.paddleB, self.ball):
             self.ball.bounce()
-            sound = pygame.mixer.Sound('path/to/your/soundfile.wav')
-            # 设置音量和循环次数
-            sound.set_volume(50)  # 设置音量为50%
-            sound.play(1)  # 播放1次
             rewardA = 1
             self.ball.velocity[0] *= config.BALL_BOUNCE_FACTOR
             self.ball.rect.x -= config.PADDLE_WIDTH
             self.ball.BOUNCE += 1
-
+            self.collision_sound.play()  # 播放音效
         # 獎勳和結束條件
         if self.ball.rect.x < 0:
             rewardB = 1
