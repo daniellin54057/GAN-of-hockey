@@ -79,7 +79,7 @@ def singleplayer():
 
 def ai_training():
     window.destroy()
-    call(['python' , 'train2.py'])
+    call(['python' , 'play modle.py'])
 
 def on_enter_pvp(event):
     pvp.config(state= 'normal' , fg = 'blue' , activeforeground="blue" , bg='lightgreen')
